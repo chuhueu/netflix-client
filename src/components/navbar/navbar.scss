@@ -28,7 +28,7 @@
       align-items: center;
 
       img {
-        height: 25px;
+        height: 30px;
         margin-right: 40px;
 
         @include mobile {
@@ -41,12 +41,12 @@
         cursor: pointer;
         font-size: 16px;
 
-        @include tablet {
+        @include table {
           display: none;
         }
 
         &.navbarmainLinks {
-          @include tablet {
+          @include table {
             display: block;
           }
         }

@@ -4,43 +4,57 @@ import {
     Add,
     ThumbUpAltOutlined,
     ThumbDownOutlined,
-    FiberManualRecord
+    FiberManualRecord,
+    KeyboardArrowDown
 } from "@material-ui/icons";
 import { useState, useEffect } from "react";
 import ReactPlayer from 'react-player/lazy';
 import axios from 'axios';
-import debounce from 'debounce';
 import { Link } from 'react-router-dom'
 const Listitem = ({ index, item }) => {
     const [isHovered, setIsHovered] = useState(false);
-    const [movie, setMovie] = useState({});
+    const [movie, setMovie] = useState([]);
+    const [delayHandler, setDelayHandler] = useState(null);
+
+    const handleMouseEnter = () => {
+        setDelayHandler(setTimeout(() => {
+            setIsHovered(true);
+        }, 500))
+    }
+    const handleMouseLeave = () => {
+        setIsHovered(false);
+        clearTimeout(delayHandler);
+    }
+
 
     useEffect(() => {
-        const getMovie = async () => {
-            try {
-                const res = await axios.get("/movies/find/" + item,{
-                    headers: {
-                      token:
-                      "Bearer "+JSON.parse(localStorage.getItem("user")).accessToken,
-                    },
-                  });
-                setMovie(res.data);
-            } catch (error) {
-                console.log(error);
+        setTimeout(() => {
+            const getMovie = async () => {
+                try {
+                    const res = await axios.get("movies/find/" + item, {
+                        headers: {
+                            token:
+                                "Bearer " + JSON.parse(localStorage.getItem("user")).accessToken,
+                        },
+                    });
+                    setMovie(res.data);
+                } catch (error) {
+                    console.log(error);
+                }
             }
-        }
-        getMovie();
-    }, [item])
+            getMovie();
+        }, 500);
+    }, [item]);
 
     return (
-        <Link to={{pathname: "/watch", movie: movie}}>
+        <Link to={{ pathname: "/info", movie: movie }}>
             <div
                 className="listItem"
                 style={{ left: isHovered && index * 225 - 50 + index * 2.5 }}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
             >
-                <img src={movie?.imgSm} alt="" className="poster" />
+                <img src={movie?.imgSm} alt={movie?.title} className="poster" />
                 {isHovered && (
                     <>
                         <ReactPlayer
@@ -52,13 +66,15 @@ const Listitem = ({ index, item }) => {
                         />
                         <div className="itemInfo">
                             <div className="icons">
-                                <PlayArrow className="icon play" />
+                                <Link to={{ pathname: "/watch", movie: movie }}>
+                                    <PlayArrow className="icon play" />
+                                </Link>
                                 <Add className="icon add" />
                                 <ThumbUpAltOutlined className="icon like" />
                                 <ThumbDownOutlined className="icon dislike" />
-                                <p>Add to My List</p>
-                                <p>I like this</p>
-                                <p>Not for me</p>
+                                <Link to={{ pathname: "/info", movie: movie }}>
+                                    <KeyboardArrowDown className="icon moreInfo" />
+                                </Link>
                             </div>
                             <div className="itemInfoTop">
                                 <span className="rate">{movie.rate}</span>
@@ -68,7 +84,7 @@ const Listitem = ({ index, item }) => {
                             </div>
                             <div className="itemInfoDown">
                                 <h4 className="title">{movie.title}</h4>
-                                <FiberManualRecord className="dot"/>
+                                <FiberManualRecord className="dot" />
                                 <span className="genre">{movie.genre}</span>
                             </div>
                         </div>
